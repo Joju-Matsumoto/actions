@@ -1,0 +1,32 @@
+name: release
+on:
+  workflow_call:
+    inputs:
+      type:
+        type: string
+        required: false
+        description: |
+          バージョンアップの種類 [major,minor,patch]
+        default: patch
+    outputs:
+      tag:
+        description: リリースされたタグ
+        value: ${{ jobs.release.outputs.tag }}
+jobs:
+  next-version:
+    uses: Joju-Matsumoto/actions/.github/workflows/next-version.yml@main
+    with:
+      type: ${{ inputs.type }}
+  release:
+    runs-on: ubuntu-latest
+    needs: next-version
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.next-version.outputs.tag }}
+          generate_release_notes: true
+    outputs:
+      tag: ${{ needs.next-version.outputs.tag }}
