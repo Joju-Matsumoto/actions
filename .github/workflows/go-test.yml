@@ -1,0 +1,24 @@
+name: go-test
+on:
+  workflow_call:
+    inputs:
+        go-version-file:
+            type: string
+            required: false
+            default: go.mod
+        cache:
+            type: boolean
+            required: false
+            default: true
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ inputs.go-version-file }}
+          cache: ${{ inputs.cache }}
+      - name: Run Test
+        run: go test -v ./...
