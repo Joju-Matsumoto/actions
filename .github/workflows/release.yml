@@ -24,7 +24,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
       - name: release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.next-version.outputs.tag }}
           generate_release_notes: true
