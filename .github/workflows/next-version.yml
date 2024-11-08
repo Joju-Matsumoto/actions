@@ -1,0 +1,65 @@
+name: next-version
+on:
+  workflow_call:
+    inputs:
+      type:
+        type: string
+        description: |
+          バージョンアップの種類 [major,minor,patch]
+        required: false
+        default: patch
+    outputs:
+      tag:
+        description: 次のバージョンタグ
+        value: ${{ jobs.next-version.outputs.tag }}
+jobs:
+  next-version:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.next-version.outputs.result }}
+    steps:
+      - name: Next Version
+        id: next-version
+        uses: actions/github-script@v7
+        with:
+          result-encoding: string
+          script: |
+            // get latest version tag
+
+            let latestVersion = 'v0.0.0'
+
+            try {
+              const res = await github.rest.repos.getLatestRelease({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+            })
+              latestVersion = res.data.tag_name
+            } catch(err) {
+              console.log(err.message)
+            }
+
+            console.log(`Latest version: ${latestVersion}`)
+
+
+            // calculcate next version tag
+
+            let [major, minor, patch] = latestVersion.replace(/^v/i, '').split('.').map(v => parseInt(v))
+
+            switch ('${{inputs.type}}'.toLowerCase()) {
+              case 'major':
+                major += 1
+                minor = 0
+                patch = 0
+                break
+              case 'minor':
+                minor += 1
+                patch = 0
+                break
+              default:
+                patch += 1
+            }
+            const nextVersion = `v${[major, minor, patch].join('.')}`
+
+            console.log(`Next version: ${nextVersion}`)
+
+            return nextVersion
